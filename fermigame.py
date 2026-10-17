@@ -5,7 +5,7 @@ import os
 # 페이지 설정
 st.set_page_config(page_title="법률 페르미 추정 챌린지", page_icon="⚖️", layout="centered")
 
-# 외부 파일에서 문제 불러오기 검증 함수
+# 외부 파일에서 문제 불러오기
 @st.cache_data
 def load_questions():
     if not os.path.exists("questions.json"):
@@ -25,13 +25,27 @@ if 'attempts' not in st.session_state:
 if 'score' not in st.session_state:
     st.session_state.score = 0
 if 'history' not in st.session_state:
-    st.session_state.history = []
+    st.session_state.history = {} # 중복 방지를 위해 딕셔너리로 문제별 기록 관리
 if 'feedback' not in st.session_state:
     st.session_state.feedback = ""
+if 'popup_shown' not in st.session_state:
+    st.session_state.popup_shown = False
+
+# 80점 이상 달성 시 뜨는 팝업 창 정의
+@st.dialog("🎁 특별 보상: [ 숫자힌트 7 ]")
+def show_reward_dialog():
+    st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
+    st.markdown("""
+    모든 문제의 기조를 관통하는 오늘의 시크릿 마법의 숫자: **7**
+    
+    *(법조계 및 법률 통계 분석에서 핵심적으로 다뤄지는 상징적인 숫자입니다!)*
+    """)
+    if st.button("확인", use_container_width=True):
+        st.session_state.popup_shown = True
+        st.rerun()
 
 st.title("⚖️ 법률 페르미 추정 챌린지")
 
-# 문제 파일이 없을 경우의 예외 처리
 if not QUESTIONS:
     st.error("⚠️ 'questions.json' 파일을 찾을 수 없거나 내용이 비어 있습니다. 파일을 확인해 주세요!")
     st.stop()
@@ -45,20 +59,20 @@ if st.session_state.step == 'intro':
     - 정답 숫자의 **$\pm 10\%$ 이내**로 숫자를 입력하면 정답으로 인정됩니다!
     - 스마트폰과 태블릿에서 정답 입력칸을 터치하면 **숫자 패드**가 자동으로 활성화됩니다.
     - 5번 안에 맞히면 **10점 획득!** (5회를 모두 틀려도 다음 문제로 넘어갑니다.)
-    - **총점 80점 이상** 달성 시, 특별한 **[ 숫자힌트 7 ]** 보상이 열립니다!
+    - **총점 80점 이상** 달성 시, 특별한 보상이 열립니다!
     """)
     if st.button("게임 시작하기 🚀", type="primary", use_container_width=True):
         st.session_state.step = 'quiz'
         st.session_state.q_idx = 0
         st.session_state.attempts = 0
         st.session_state.score = 0
-        st.session_state.history = []
+        st.session_state.history = {}
         st.session_state.feedback = ""
+        st.session_state.popup_shown = False
         st.rerun()
 
 # 2. 퀴즈 진행 화면
 elif st.session_state.step == 'quiz':
-    # 인덱스 초과 방지 안전장치
     if st.session_state.q_idx >= len(QUESTIONS):
         st.session_state.step = 'result'
         st.rerun()
@@ -69,9 +83,8 @@ elif st.session_state.step == 'quiz':
     st.progress(q_idx / len(QUESTIONS), text=f"진행 상황: 문제 {q_idx + 1} / {len(QUESTIONS)}")
     st.markdown(f"### Q{q_idx + 1}. {q['title']}")
     st.info(q['desc'])
-    st.caption(f"남은 도전 횟수: {5 - st.session_state.attempts}회 (기회는 총 5번입니다)")
 
-    # 폼을 이용한 입력 최적화
+    # 폼을 이용한 입력 처리
     with st.form(key=f"guess_form_{q_idx}"):
         user_guess = st.number_input("숫자를 입력하세요", min_value=0, step=1, format="%d", key=f"input_{q_idx}")
         submitted = st.form_submit_button("정답 제출", use_container_width=True)
@@ -80,21 +93,19 @@ elif st.session_state.step == 'quiz':
             st.session_state.attempts += 1
             ans = q['answer']
             
-            # 정답의 ±10% 오차 범위 계산
             margin = ans * 0.10
             lower_bound = ans - margin
             upper_bound = ans + margin
 
-            # 10폭 범위 안에 들어오면 정답 처리
             if lower_bound <= user_guess <= upper_bound:
                 st.session_state.score += 10
-                st.session_state.history.append({
+                st.session_state.history[q_idx] = {
                     "title": q['title'],
                     "answer": ans,
                     "guess": user_guess,
                     "success": True,
                     "attempts": st.session_state.attempts
-                })
+                }
                 st.session_state.feedback = "CORRECT"
                 st.rerun()
             else:
@@ -103,19 +114,18 @@ elif st.session_state.step == 'quiz':
                 else:
                     st.session_state.feedback = "UP 📈 (입력한 숫자가 정답보다 큽니다)"
 
-                # 5번 모두 틀렸을 경우 안전 처리
                 if st.session_state.attempts >= 5:
-                    st.session_state.history.append({
+                    st.session_state.history[q_idx] = {
                         "title": q['title'],
                         "answer": ans,
                         "guess": user_guess,
                         "success": False,
                         "attempts": st.session_state.attempts
-                    })
+                    }
                     st.session_state.feedback = "FAIL"
                     st.rerun()
 
-    # 결과 및 피드백 처리
+    # 피드백 및 다음 문제 이동 처리
     if st.session_state.feedback == "CORRECT":
         st.balloons()
         st.success("🎉 정답입니다! 오차 범위 내의 훌륭한 추정이었어요!")
@@ -146,32 +156,25 @@ elif st.session_state.step == 'quiz':
 
 # 3. 결과 및 리포트 화면
 elif st.session_state.step == 'result':
+    final_score = st.session_state.score
+    max_score = len(QUESTIONS) * 10
+
+    # 80점 이상이고 팝업이 아직 안 떴다면 팝업 호출
+    if final_score >= 80 and not st.session_state.popup_shown:
+        show_reward_dialog()
+
     st.balloons()
     st.header("🏆 챌린지 종료 및 결과 리포트")
-    final_score = st.session_state.score
-    st.metric(label="최종 점수", value=f"{final_score} 점 / {len(QUESTIONS) * 10} 점")
+    st.metric(label="최종 점수", value=f"{final_score} 점 / {max_score} 점")
 
-    # 80점 이상 시 특별 보상 팝업(배너) 표시
     if final_score >= 80:
-        st.markdown("---")
         st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
-        st.markdown(
-            """
-            <div style="background-color: #ff4b4b; padding: 25px; border-radius: 12px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <h1 style="margin: 0; font-size: 28px;">🎁 [ 숫자힌트 7 ] 🎁</h1>
-                <p style="font-size: 18px; margin-top: 10px;">모든 문제의 기조를 관통하는 오늘의 시크릿 마법의 숫자: <b>7</b></p>
-                <p style="font-size: 13px; margin-bottom: 0;">(법조계 및 법률 통계 분석에서 핵심적으로 다뤄지는 상징적인 숫자입니다!)</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-        st.markdown("---")
     else:
-        st.info("아쉽게도 80점 미만입니다. 다시 도전해서 '숫자힌트 7' 보상을 획득해 보세요!")
+        st.info("아쉽게도 80점 미입니다. 다시 도전해서 보상을 획득해 보세요!")
 
     st.subheader("📋 문제별 상세 오차 리포트")
-    for i, h in enumerate(st.session_state.history):
-        with st.expander(f"문제 {i+1}. {h['title']} - {'✅ 정답' if h['success'] else '❌ 실패'}"):
+    for idx, h in sorted(st.session_state.history.items()):
+        with st.expander(f"문제 {idx+1}. {h['title']} - {'✅ 정답' if h['success'] else '❌ 실패'}"):
             st.write(f"- 실제 공식 정답: **{h['answer']:,}** (인정 오차 범위: ±10%)")
             st.write(f"- 내가 제출한 최종 값: **{h['guess']:,}**")
             if h['success']:
@@ -186,6 +189,7 @@ elif st.session_state.step == 'result':
         st.session_state.q_idx = 0
         st.session_state.attempts = 0
         st.session_state.score = 0
-        st.session_state.history = []
+        st.session_state.history = {}
         st.session_state.feedback = ""
+        st.session_state.popup_shown = False
         st.rerun()
