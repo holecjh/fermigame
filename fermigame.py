@@ -25,20 +25,20 @@ if 'attempts' not in st.session_state:
 if 'score' not in st.session_state:
     st.session_state.score = 0
 if 'history' not in st.session_state:
-    st.session_state.history = {} # 중복 방지를 위해 딕셔너리로 문제별 기록 관리
+    st.session_state.history = {}
 if 'feedback' not in st.session_state:
     st.session_state.feedback = ""
 if 'popup_shown' not in st.session_state:
     st.session_state.popup_shown = False
 
-# 80점 이상 달성 시 뜨는 팝업 창 정의
+# 80점 이상 달성 시 뜨는 팝업 창 (숫자힌트 7 중복 노출 제거)
 @st.dialog("🎁 특별 보상: [ 숫자힌트 7 ]")
 def show_reward_dialog():
     st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
     st.markdown("""
-    모든 문제의 기조를 관통하는 오늘의 시크릿 마법의 숫자: **7**
+    모든 문제의 기조를 관통하는 오늘의 시크릿 마법의 숫자입니다!
     
-    *(법조계 및 법률 통계 분석에서 핵심적으로 다뤄지는 상징적인 숫자입니다!)*
+    *(!!수고하셨습니다!!)*
     """)
     if st.button("확인", use_container_width=True):
         st.session_state.popup_shown = True
@@ -56,7 +56,7 @@ if st.session_state.step == 'intro':
     st.markdown("""
     - **총 10문제**가 출제됩니다.
     - 각 문제당 **5번의 기회**가 주어지며, 숫자를 입력하면 대소 비교 결과가 안내됩니다.
-    - 정답 숫자의 **$\pm 10\%$ 이내**로 숫자를 입력하면 정답으로 인정됩니다!
+    - 정답 숫자의 **± 10% 이내**로 숫자를 입력하면 정답으로 인정됩니다!
     - 스마트폰과 태블릿에서 정답 입력칸을 터치하면 **숫자 패드**가 자동으로 활성화됩니다.
     - 5번 안에 맞히면 **10점 획득!** (5회를 모두 틀려도 다음 문제로 넘어갑니다.)
     - **총점 80점 이상** 달성 시, 특별한 보상이 열립니다!
@@ -79,6 +79,10 @@ elif st.session_state.step == 'quiz':
 
     q_idx = st.session_state.q_idx
     q = QUESTIONS[q_idx]
+    
+    # 마지막 문제인지 확인하여 버튼 문구 변경
+    is_last_question = (q_idx == len(QUESTIONS) - 1)
+    btn_label = "결과 확인 ➡️" if is_last_question else "다음 문제로 ➡️"
 
     st.progress(q_idx / len(QUESTIONS), text=f"진행 상황: 문제 {q_idx + 1} / {len(QUESTIONS)}")
     st.markdown(f"### Q{q_idx + 1}. {q['title']}")
@@ -125,11 +129,11 @@ elif st.session_state.step == 'quiz':
                     st.session_state.feedback = "FAIL"
                     st.rerun()
 
-    # 피드백 및 다음 문제 이동 처리
+    # 피드백 및 다음 문제/결과 확인 이동 처리
     if st.session_state.feedback == "CORRECT":
         st.balloons()
         st.success("🎉 정답입니다! 오차 범위 내의 훌륭한 추정이었어요!")
-        if st.button("다음 문제로 ➡️", use_container_width=True):
+        if st.button(btn_label, use_container_width=True):
             st.session_state.q_idx += 1
             st.session_state.attempts = 0
             st.session_state.feedback = ""
@@ -140,7 +144,7 @@ elif st.session_state.step == 'quiz':
     elif st.session_state.feedback == "FAIL":
         st.error("틀렸네요 ㅜㅜ (5번의 기회를 모두 소진하셨습니다 😭)")
         st.warning(f"실제 정답은 **{q['answer']:,}** 였습니다!")
-        if st.button("다음 문제로 넘어가기 ➡️", use_container_width=True):
+        if st.button(btn_label, use_container_width=True):
             st.session_state.q_idx += 1
             st.session_state.attempts = 0
             st.session_state.feedback = ""
@@ -170,7 +174,7 @@ elif st.session_state.step == 'result':
     if final_score >= 80:
         st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
     else:
-        st.info("아쉽게도 80점 미입니다. 다시 도전해서 보상을 획득해 보세요!")
+        st.info("아쉽게도 80점 미만입니다. 다시 도전해서 보상을 획득해 보세요!")
 
     st.subheader("📋 문제별 상세 오차 리포트")
     for idx, h in sorted(st.session_state.history.items()):
