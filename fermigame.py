@@ -31,14 +31,12 @@ if 'feedback' not in st.session_state:
 if 'popup_shown' not in st.session_state:
     st.session_state.popup_shown = False
 
-# 80점 이상 달성 시 뜨는 팝업 창 (숫자힌트 7 중복 노출 제거)
-@st.dialog("🎁 특별 보상: [ 숫자힌트 7 ]")
+# 80점 이상 달성 시 뜨는 팝업 창 (비밀번호힌트 7 중복 노출 제거)
+@st.dialog("🎁 특별 보상: [ 비밀번호힌트 7 ]")
 def show_reward_dialog():
     st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
     st.markdown("""
-    모든 문제의 기조를 관통하는 오늘의 시크릿 마법의 숫자입니다!
-    
-    *(법조계 및 법률 통계 분석에서 핵심적으로 다뤄지는 상징적인 숫자입니다)*
+    *(!!수고하셨습니다!!)*
     """)
     if st.button("확인", use_container_width=True):
         st.session_state.popup_shown = True
