@@ -3,7 +3,7 @@ import json
 import os
 
 # 페이지 설정
-st.set_page_config(page_title="법률 페르미 추정 챌린지", page_icon="⚖️", layout="centered")
+st.set_page_config(page_title="법관련 페르미 추정 챌린지", page_icon="⚖️", layout="centered")
 
 # 외부 파일에서 문제 불러오기
 @st.cache_data
