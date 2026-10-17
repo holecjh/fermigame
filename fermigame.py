@@ -38,7 +38,7 @@ def show_reward_dialog():
     st.markdown("""
     모든 문제의 기조를 관통하는 오늘의 시크릿 마법의 숫자입니다!
     
-    *(!!수고하셨습니다!!)*
+    *(법조계 및 법률 통계 분석에서 핵심적으로 다뤄지는 상징적인 숫자입니다)*
     """)
     if st.button("확인", use_container_width=True):
         st.session_state.popup_shown = True
@@ -143,7 +143,7 @@ elif st.session_state.step == 'quiz':
 
     elif st.session_state.feedback == "FAIL":
         st.error("틀렸네요 ㅜㅜ (5번의 기회를 모두 소진하셨습니다 😭)")
-        st.warning(f"실제 정답은 **{q['answer']:,}** 였습니다!")
+        # 틀렸을 때는 정답을 알려주지 않음 (요청사항 반영)
         if st.button(btn_label, use_container_width=True):
             st.session_state.q_idx += 1
             st.session_state.attempts = 0
@@ -179,14 +179,15 @@ elif st.session_state.step == 'result':
     st.subheader("📋 문제별 상세 오차 리포트")
     for idx, h in sorted(st.session_state.history.items()):
         with st.expander(f"문제 {idx+1}. {h['title']} - {'✅ 정답' if h['success'] else '❌ 실패'}"):
-            st.write(f"- 실제 공식 정답: **{h['answer']:,}** (인정 오차 범위: ±10%)")
-            st.write(f"- 내가 제출한 최종 값: **{h['guess']:,}**")
+            # 정답을 맞힌 경우에만 실제 정답 공개
             if h['success']:
+                st.write(f"- 실제 공식 정답: **{h['answer']:,}** (인정 오차 범위: ±10%)")
+                st.write(f"- 내가 제출한 값: **{h['guess']:,}**")
                 st.markdown(f"🎉 **{h['attempts']}번 만에 정확히 맞추셨습니다!**")
             else:
-                error_diff = abs(h['guess'] - h['answer'])
-                error_pct = (error_diff / h['answer']) * 100 if h['answer'] > 0 else 0
-                st.markdown(f"😢 **틀렸네요 ㅜㅜ** (실제 정답과 **{error_diff:,}** 만큼 차이 났으며, 오차율은 **{error_pct:.1f}%** 입니다)")
+                # 틀린 경우에는 정답을 숨기고 내가 제출한 값과 실패 여부만 표시
+                st.write(f"- 내가 제출한 최종 값: **{h['guess']:,}**")
+                st.markdown("😢 **틀렸네요 ㅜㅜ (정답은 비공개입니다)**")
 
     if st.button("🔄 게임 다시 하기", use_container_width=True):
         st.session_state.step = 'intro'
