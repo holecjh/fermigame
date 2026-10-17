@@ -133,6 +133,7 @@ elif st.session_state.step == 'quiz':
     if st.session_state.feedback == "CORRECT":
         st.balloons()
         st.success("🎉 정답입니다! 오차 범위 내의 훌륭한 추정이었어요!")
+        st.success(f"🎉(실제 공식 정답: **{q['answer']:,}**)")
         if st.button(btn_label, use_container_width=True):
             st.session_state.q_idx += 1
             st.session_state.attempts = 0
