@@ -31,8 +31,8 @@ if 'feedback' not in st.session_state:
 if 'popup_shown' not in st.session_state:
     st.session_state.popup_shown = False
 
-# 80점 이상 달성 시 뜨는 팝업 창 (비밀번호힌트 7 중복 노출 제거)
-@st.dialog("🎁 특별 보상: [ 비밀번호힌트 7 ]")
+# 80점 이상 달성 시 뜨는 팝업 창 (비밀번호힌트 6 중복 노출 제거)
+@st.dialog("🎁 특별 보상: [ 비밀번호힌트 6(법률) ]")
 def show_reward_dialog():
     st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
     st.markdown("""
