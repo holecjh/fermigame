@@ -42,7 +42,7 @@ def show_reward_dialog():
         st.session_state.popup_shown = True
         st.rerun()
 
-st.title("⚖️ 법률 페르미 추정 챌린지")
+st.title("⚖️ 법관련 페르미 추정 챌린지")
 
 if not QUESTIONS:
     st.error("⚠️ 'questions.json' 파일을 찾을 수 없거나 내용이 비어 있습니다. 파일을 확인해 주세요!")
