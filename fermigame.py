@@ -31,10 +31,10 @@ if 'feedback' not in st.session_state:
 if 'popup_shown' not in st.session_state:
     st.session_state.popup_shown = False
 
-# 80점 이상 달성 시 뜨는 팝업 창 (비밀번호힌트 6 중복 노출 제거)
+# 60점 이상 달성 시 뜨는 팝업 창 (비밀번호힌트 6 중복 노출 제거)
 @st.dialog("🎁 특별 보상: [ 비밀번호힌트 6(법률) ]")
 def show_reward_dialog():
-    st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
+    st.success("🌟 60점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
     st.markdown("""
     *(!!수고하셨습니다!!)*
     """)
@@ -57,7 +57,7 @@ if st.session_state.step == 'intro':
     - 정답 숫자의 **± 10% 이내**로 숫자를 입력하면 정답으로 인정됩니다!
     - 스마트폰과 태블릿에서 정답 입력칸을 터치하면 **숫자 패드**가 자동으로 활성화됩니다.
     - 5번 안에 맞히면 **10점 획득!** (5회를 모두 틀려도 다음 문제로 넘어갑니다.)
-    - **총점 80점 이상** 달성 시, 특별한 보상이 열립니다!
+    - **총점 60점 이상** 달성 시, 특별한 보상이 열립니다!
     """)
     if st.button("게임 시작하기 🚀", type="primary", use_container_width=True):
         st.session_state.step = 'quiz'
@@ -162,18 +162,18 @@ elif st.session_state.step == 'result':
     final_score = st.session_state.score
     max_score = len(QUESTIONS) * 10
 
-    # 80점 이상이고 팝업이 아직 안 떴다면 팝업 호출
-    if final_score >= 80 and not st.session_state.popup_shown:
+    # 60점 이상이고 팝업이 아직 안 떴다면 팝업 호출
+    if final_score >= 60 and not st.session_state.popup_shown:
         show_reward_dialog()
 
     st.balloons()
     st.header("🏆 챌린지 종료 및 결과 리포트")
     st.metric(label="최종 점수", value=f"{final_score} 점 / {max_score} 점")
 
-    if final_score >= 80:
-        st.success("🌟 80점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
+    if final_score >= 60:
+        st.success("🌟 60점 이상 달성! 뛰어난 법률 페르미 추정 능력을 증명하셨습니다!")
     else:
-        st.info("아쉽게도 80점 미만입니다. 다시 도전해서 보상을 획득해 보세요!")
+        st.info("아쉽게도 60점 미만입니다. 다시 도전해서 보상을 획득해 보세요!")
 
     st.subheader("📋 문제별 상세 오차 리포트")
     for idx, h in sorted(st.session_state.history.items()):
