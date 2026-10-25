@@ -112,9 +112,9 @@ elif st.session_state.step == 'quiz':
                 st.rerun()
             else:
                 if user_guess < ans:
-                    st.session_state.feedback = "DOWN 📉 (입력한 숫자가 정답보다 작습니다)"
+                    st.session_state.feedback = "(입력한 숫자가 정답보다 작습니다)"
                 else:
-                    st.session_state.feedback = "UP 📈 (입력한 숫자가 정답보다 큽니다)"
+                    st.session_state.feedback = "(입력한 숫자가 정답보다 큽니다)"
 
                 if st.session_state.attempts >= 5:
                     st.session_state.history[q_idx] = {
